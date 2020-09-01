@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using MSProject = Microsoft.Office.Interop.MSProject;
 using MySql.Data.MySqlClient;
 using System.Collections;
+using System.Net.Mime;
 
 namespace prueba3
 {
@@ -239,10 +240,10 @@ namespace prueba3
 
         private void button2_Click(object sender, EventArgs e)
         {
+            //inicializar
             //try
             //{
             MySqlConnection conn = new MySqlConnection(connStr);
-            MessageBox.Show("Todo bien\n\n");
             //}
             //catch (Exception errosql)
             //{
@@ -267,16 +268,19 @@ namespace prueba3
                 conn.Open();
                 MySqlDataReader reader;
                 MySqlCommand command;
-                string commandStr = "SELECT * FROM request WHERE req_cargar='true';";
+                string commandStr = "SELECT * FROM (SELECT request.req_id, request.req_ms_project, COUNT(activities.req_id) AS act_count FROM request LEFT JOIN activities ON activities.req_id = request.req_id GROUP BY 1) AS src WHERE src.act_count = 0;";
                 command = new MySqlCommand(commandStr, conn);
                 reader = command.ExecuteReader();
-
+                if (!reader.HasRows)
+                {
+                    MessageBox.Show("Error no hay solicitudes para cargar.\nVerifique que las solicitudes a cargar no tegan tareas ya inicializadas");
+                }
                 while (reader.Read())
                 {
                     //MessageBox.Show("aqui\n\n");
                     request_id[contador1] = reader.GetDouble(0);
                     //MessageBox.Show(request_id[contador1].ToString());
-                    ms_project[contador1] = reader.GetString(4);
+                    ms_project[contador1] = reader.GetString(1);
                     contador1++;
                 }
                 reader.Close(); //importante cerrar el reader pues solo se puede tener uno abierto a la vez
@@ -313,9 +317,11 @@ namespace prueba3
 
             ArrayList tasks = new ArrayList(); // se declara array de las tareas
                                                // creamos un objeto de tipo aplicacion MSProject
-            int cont = 0;
+            int contTask = 0;
+            int contTitle = 0;
             int cont1 = 0;
-
+            int contTaskT = 0;
+            int contTitleT = 0;
             string[] task_names = new string[50];
             MSProject.Application app = null;
             app = new MSProject.Application();
@@ -324,9 +330,10 @@ namespace prueba3
             {
                 if (project != null)
                 {
-                    MessageBox.Show(project);
                     try
                     {
+                        contTask = 0;
+                        contTitle = 0;
                         // Si no hay problemas para abrir el project entrará en la condición
                         // Fijense en la info que da FileOpen pues aqui indicarás especificas como lo quieres abrir (escritura/lectura) y la ruta, como está aqui es de la forma que se pueda escribir y leer en él
                         if (app.FileOpen("C:/Home/Intelix/Mayoreo/00-Control-Solicitudes/" + project + "", false, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, MSProject.PjPoolOpen.pjPoolReadWrite, Type.Missing, Type.Missing, Type.Missing, Type.Missing))
@@ -363,7 +370,8 @@ namespace prueba3
                                             reader = command1.ExecuteReader();
                                             reader.Close(); //importante cerrar el reader pues solo se puede tener uno abierto a la vez
                                             conn.Close();
-                                            cont++;
+                                            contTask++;
+                                            contTaskT++;
                                         }
                                         catch (Exception errosql)
                                         {
@@ -381,10 +389,6 @@ namespace prueba3
                                         act_init_date = String.Format("{0:yyyy-MM-dd HH:mm:ss}", task.Start);
                                         act_end_date = String.Format("{0:yyyy-MM-dd HH:mm:ss}", task.Finish);
 
-                                        if (cont % 10 == 0 && cont != 0)
-                                        {
-                                            MessageBox.Show("10 tareas agregadas a la base de datos");
-                                        }
 
 
                                         try
@@ -401,7 +405,8 @@ namespace prueba3
                                             reader = command1.ExecuteReader();
                                             reader.Close(); //importante cerrar el reader pues solo se puede tener uno abierto a la vez
                                             conn.Close();
-                                            cont++;
+                                            contTitle++;
+                                            contTitleT++;
                                         }
                                         catch (Exception errosql)
                                         {
@@ -415,7 +420,7 @@ namespace prueba3
                                 }
                             }
 
-                            MessageBox.Show(cont + " tareas agregadas a la base de datos");
+                            MessageBox.Show(contTask + " tareas agregadas a la base de datos.\n\n"+contTitle+" titulos agregados a la base de datos.\n\nCargadas desde: " + project);
                             app.FileClose(Microsoft.Office.Interop.MSProject.PjSaveType.pjSave, false); //cerramos el fichero
                         }
 
@@ -428,6 +433,7 @@ namespace prueba3
                     cont1++;
                 }
             }
+            MessageBox.Show("Se agrego un total de:\n\n\t- " + contTaskT + " tareas a la base de datos.\n\n\t- " + contTitleT + " titulos a la base de datos.");  
         }
 
         private void txt_reqtitle_TextChanged(object sender, EventArgs e)
