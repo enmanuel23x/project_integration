@@ -364,7 +364,7 @@ namespace prueba3
 
                                             MySqlCommand command1;
 
-                                            string commandStr1 = "INSERT INTO activities (req_id, act_trello_name, act_init_date, act_end_date, act_estimated_hours, act_time_loaded ,act_porcent, act_title, act_trello_user, act_mail) VALUES (" + request_id[cont1] + ",'" + act_trello_name + "','" + act_init_date + "', '" + act_end_date + "', " + act_estimated_hours + "," + act_time_loaded + ", " + 0 + ", 'false', '" + act_trello_user + "', '" + act_mail + "')";
+                                            string commandStr1 = "INSERT INTO activities (req_id, act_trello_name, act_init_date, act_end_date, act_estimated_hours, act_time_loaded ,act_porcent, act_title, act_trello_user, act_mail) VALUES (" + request_id[cont1] + ",LTRIM(RTRIM('" + act_trello_name + "')),'" + act_init_date + "', '" + act_end_date + "', " + act_estimated_hours + "," + act_time_loaded + ", " + 0 + ", 'false', '" + act_trello_user + "', '" + act_mail + "')";
 
                                             command1 = new MySqlCommand(commandStr1, conn);
                                             reader = command1.ExecuteReader();
@@ -399,7 +399,7 @@ namespace prueba3
 
                                             MySqlCommand command1;
 
-                                            string commandStr1 = "INSERT INTO activities (req_id, act_trello_name, act_init_date, act_end_date, act_estimated_hours, act_time_loaded ,act_porcent, act_title, act_trello_user, act_mail) VALUES (" + request_id[cont1] + ",'" + act_trello_name + "','" + act_init_date + "', '" + act_end_date + "', " + act_estimated_hours + "," + act_time_loaded + ", " + 0 + ", 'true', '', '')";
+                                            string commandStr1 = "INSERT INTO activities (req_id, act_trello_name, act_init_date, act_end_date, act_estimated_hours, act_time_loaded ,act_porcent, act_title, act_trello_user, act_mail) VALUES (" + request_id[cont1] + ",LTRIM(RTRIM('" + act_trello_name + "')),'" + act_init_date + "', '" + act_end_date + "', " + act_estimated_hours + "," + act_time_loaded + ", " + 0 + ", 'true', '', '')";
 
                                             command1 = new MySqlCommand(commandStr1, conn);
                                             reader = command1.ExecuteReader();
